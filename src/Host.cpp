@@ -8,6 +8,7 @@ namespace GPUGame
 Host::Host()
 	: system_window_()
 	, window_vulkan_(system_window_)
+	, game_launcher_(window_vulkan_)
 {
 }
 
@@ -20,8 +21,15 @@ bool Host::Loop()
 			return true;
 	}
 
-	window_vulkan_.BeginFrame();
-	window_vulkan_.EndFrame({});
+	{
+		const vk::CommandBuffer command_buffer= window_vulkan_.BeginFrame();
+		game_launcher_.BeginFrame(command_buffer);
+	}
+
+	window_vulkan_.EndFrame(
+	{
+		[&](const vk::CommandBuffer command_buffer, const vk::Image swapchain_image) { game_launcher_.EndFrame(command_buffer, swapchain_image); },
+	});
 
 	return false;
 }

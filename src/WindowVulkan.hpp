@@ -10,7 +10,7 @@ namespace GPUGame
 class WindowVulkan final
 {
 public:
-	using DrawFunction= std::function<void(vk::CommandBuffer)>;
+	using DrawFunction= std::function<void(vk::CommandBuffer, vk::Image)>;
 	using DrawFunctions= std::vector<DrawFunction>;
 
 public:
@@ -24,7 +24,6 @@ public:
 	vk::Queue GetQueue() const;
 	vk::Extent2D GetViewportSize() const;
 	uint32_t GetQueueFamilyIndex() const;
-	vk::RenderPass GetRenderPass() const; // Render pass for rendering directly into screen.
 	const vk::PhysicalDeviceMemoryProperties& GetMemoryProperties() const;
 	const vk::PhysicalDevice& GetPhysicalDevice() const;
 
@@ -37,12 +36,6 @@ private:
 		vk::UniqueFence submit_fence;
 	};
 
-	struct SwapchainFramebufferData
-	{
-		vk::Image image;
-		vk::UniqueImageView image_view;
-		vk::UniqueFramebuffer framebuffer;
-	};
 
 private:
 	// Keep here order of construction.
@@ -57,8 +50,7 @@ private:
 	vk::PhysicalDevice physical_device_;
 	vk::UniqueSwapchainKHR vk_swapchain_;
 
-	vk::UniqueRenderPass vk_render_pass_;
-	std::vector<SwapchainFramebufferData> framebuffers_; // one framebuffer for each swapchain image.
+	std::vector<vk::Image> swapchain_images_;
 
 	vk::UniqueCommandPool vk_command_pool_;
 

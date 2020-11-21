@@ -262,65 +262,14 @@ WindowVulkan::WindowVulkan(const SystemWindow& system_window)
 			surface_format.colorSpace,
 			surface_capabilities.maxImageExtent,
 			1u,
-			vk::ImageUsageFlagBits::eColorAttachment,
+			vk::ImageUsageFlagBits::eTransferDst,
 			vk::SharingMode::eExclusive,
 			1u, &queue_family_index,
 			vk::SurfaceTransformFlagBitsKHR::eIdentity,
 			vk::CompositeAlphaFlagBitsKHR::eOpaque,
 			present_mode));
 
-	// Create render pass and framebuffers for drawing into screen.
-
-	const vk::AttachmentDescription vk_attachment_description(
-		vk::AttachmentDescriptionFlags(),
-		surface_format.format,
-		vk::SampleCountFlagBits::e1,
-		vk::AttachmentLoadOp::eDontCare,
-		vk::AttachmentStoreOp::eStore,
-		vk::AttachmentLoadOp::eDontCare,
-		vk::AttachmentStoreOp::eDontCare,
-		vk::ImageLayout::eUndefined,
-		vk::ImageLayout::ePresentSrcKHR);
-
-	const vk::AttachmentReference vk_attachment_reference(
-		0u,
-		vk::ImageLayout::eColorAttachmentOptimal);
-
-	const vk::SubpassDescription vk_subpass_description(
-		vk::SubpassDescriptionFlags(),
-		vk::PipelineBindPoint::eGraphics,
-		0u, nullptr,
-		1u, &vk_attachment_reference);
-
-	vk_render_pass_=
-		vk_device_->createRenderPassUnique(
-			vk::RenderPassCreateInfo(
-				vk::RenderPassCreateFlags(),
-				1u, &vk_attachment_description,
-				1u, &vk_subpass_description));
-
-	const std::vector<vk::Image> swapchain_images= vk_device_->getSwapchainImagesKHR(*vk_swapchain_);
-	framebuffers_.resize(swapchain_images.size());
-	for(size_t i= 0u; i < framebuffers_.size(); ++i)
-	{
-		framebuffers_[i].image= swapchain_images[i];
-		framebuffers_[i].image_view=
-			vk_device_->createImageViewUnique(
-				vk::ImageViewCreateInfo(
-					vk::ImageViewCreateFlags(),
-					framebuffers_[i].image,
-					vk::ImageViewType::e2D,
-					surface_format.format,
-					vk::ComponentMapping(),
-					vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0u, 1u, 0u, 1u)));
-		framebuffers_[i].framebuffer=
-			vk_device_->createFramebufferUnique(
-				vk::FramebufferCreateInfo(
-					vk::FramebufferCreateFlags(),
-					*vk_render_pass_,
-					1u, &*framebuffers_[i].image_view,
-					viewport_size_.width , viewport_size_.height, 1u));
-	}
+	swapchain_images_= vk_device_->getSwapchainImagesKHR(*vk_swapchain_);
 
 	// Create command pull.
 	vk_command_pool_= vk_device_->createCommandPoolUnique(
@@ -393,6 +342,7 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 			*current_frame_command_buffer_->image_available_semaphore,
 			vk::Fence()).value;
 
+	/*
 	// Begin render pass.
 	command_buffer.beginRenderPass(
 		vk::RenderPassBeginInfo(
@@ -410,6 +360,50 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 
 	// End render pass.
 	command_buffer.endRenderPass();
+	*/
+
+	{
+		const vk::ImageMemoryBarrier image_memory_barrier_final(
+			vk::AccessFlagBits::eTransferWrite,
+			vk::AccessFlagBits::eMemoryRead,
+			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
+			vk_queue_family_index_,
+			vk_queue_family_index_,
+			swapchain_images_[swapchain_image_index],
+			vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0u, 1u, 0u, 1u));
+
+		command_buffer.pipelineBarrier(
+			vk::PipelineStageFlagBits::eTransfer,
+			vk::PipelineStageFlagBits::eBottomOfPipe,
+			vk::DependencyFlags(),
+			0u, nullptr,
+			0u, nullptr,
+			1u, &image_memory_barrier_final);
+	}
+
+	for(const DrawFunction& draw_function : draw_functions)
+	{
+		draw_function(command_buffer, swapchain_images_[swapchain_image_index]);
+	}
+
+	{
+		const vk::ImageMemoryBarrier image_memory_barrier_final(
+			vk::AccessFlagBits::eTransferWrite,
+			vk::AccessFlagBits::eMemoryRead,
+			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR,
+			vk_queue_family_index_,
+			vk_queue_family_index_,
+			swapchain_images_[swapchain_image_index],
+			vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0u, 1u, 0u, 1u));
+
+		command_buffer.pipelineBarrier(
+			vk::PipelineStageFlagBits::eTransfer,
+			vk::PipelineStageFlagBits::eBottomOfPipe,
+			vk::DependencyFlags(),
+			0u, nullptr,
+			0u, nullptr,
+			1u, &image_memory_barrier_final);
+	}
 
 	// End command buffer.
 	command_buffer.end();
@@ -452,10 +446,6 @@ uint32_t WindowVulkan::GetQueueFamilyIndex() const
 	return vk_queue_family_index_;
 }
 
-vk::RenderPass WindowVulkan::GetRenderPass() const
-{
-	return *vk_render_pass_;
-}
 
 const vk::PhysicalDeviceMemoryProperties& WindowVulkan::GetMemoryProperties() const
 {

@@ -1,4 +1,5 @@
 #pragma once
+#include "GameLauncher.hpp"
 #include "SystemWindow.hpp"
 #include "WindowVulkan.hpp"
 #include <chrono>
@@ -18,6 +19,7 @@ public:
 private:
 	SystemWindow system_window_;
 	WindowVulkan window_vulkan_;
+	GameLauncher game_launcher_;
 
 	bool quit_requested_= false;
 };
