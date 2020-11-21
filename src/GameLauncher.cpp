@@ -46,27 +46,6 @@ GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
 		vk_game_framebuffer_buffer_memory_= vk_device_.allocateMemoryUnique(vk_memory_allocate_info);
 		vk_device_.bindBufferMemory(*vk_game_framebuffer_buffer_, *vk_game_framebuffer_buffer_memory_, 0u);
 	}
-	{// Fill buffer with initial values.
-		void* buffer_data_mapped= nullptr;
-		vk_device_.mapMemory(*vk_game_framebuffer_buffer_memory_, 0u, viewport_size_.width * viewport_size_.height * 4, vk::MemoryMapFlags(), &buffer_data_mapped);
-
-		for(uint32_t y= 0u; y < viewport_size_.height; ++y)
-		for(uint32_t x= 0u; x < viewport_size_. width; ++x)
-		{
-			const uint8_t r= uint8_t(x * 255u / viewport_size_.width );
-			const uint8_t g= uint8_t(y * 255u / viewport_size_.height);
-			const uint8_t b= 0u;
-			const uint8_t a= 0u;
-
-			uint8_t* const dst= reinterpret_cast<uint8_t*>(buffer_data_mapped) + 4u * (x + y * viewport_size_.width);
-			dst[0]= b;
-			dst[1]= g;
-			dst[2]= r;
-			dst[3]= a;
-		}
-
-		vk_device_.unmapMemory(*vk_game_framebuffer_buffer_memory_);
-	}
 
 	{ // Create shader.
 		game_shader_= vk_device_.createShaderModuleUnique(
@@ -74,6 +53,85 @@ GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
 				vk::ShaderModuleCreateFlags(),
 				sizeof(Shaders::test_comp),
 				Shaders::test_comp));
+	}
+
+	{ // Create pipeline.
+
+		const vk::DescriptorSetLayoutBinding descriptor_set_layout_bindings[1]
+		{
+			{
+				0u,
+				vk::DescriptorType::eStorageBuffer,
+				1u,
+				vk::ShaderStageFlagBits::eCompute,
+				nullptr,
+			},
+		};
+		vk_descriptor_set_layout_= vk_device_.createDescriptorSetLayoutUnique(
+			vk::DescriptorSetLayoutCreateInfo(
+				vk::DescriptorSetLayoutCreateFlags(),
+				uint32_t(std::size(descriptor_set_layout_bindings)), descriptor_set_layout_bindings));
+
+		vk_pipeline_layout_= vk_device_.createPipelineLayoutUnique(
+			vk::PipelineLayoutCreateInfo(
+				vk::PipelineLayoutCreateFlags(),
+				1u, &*vk_descriptor_set_layout_,
+				0u, nullptr));
+
+		vk_pipeline_= vk_device_.createComputePipelineUnique(
+			nullptr,
+			vk::ComputePipelineCreateInfo(
+				vk::PipelineCreateFlags(),
+				vk::PipelineShaderStageCreateInfo(
+					vk::PipelineShaderStageCreateFlags(),
+					vk::ShaderStageFlagBits::eCompute,
+					*game_shader_,
+					"main"),
+				*vk_pipeline_layout_));
+	}
+	{ // create descriptor set pool
+		const vk::DescriptorPoolSize vk_descriptor_pool_sizes[]
+		{
+			{
+				vk::DescriptorType::eStorageBuffer,
+				1u,
+			},
+		};
+
+		vk_descriptor_pool_=
+			vk_device_.createDescriptorPoolUnique(
+				vk::DescriptorPoolCreateInfo(
+					vk::DescriptorPoolCreateFlagBits::eFreeDescriptorSet,
+					1u, // max sets.
+					uint32_t(std::size(vk_descriptor_pool_sizes)), vk_descriptor_pool_sizes));
+	}
+	{ // Create descriptor set
+		vk_descriptor_set_=
+			std::move(
+			vk_device_.allocateDescriptorSetsUnique(
+				vk::DescriptorSetAllocateInfo(
+					*vk_descriptor_pool_,
+					1u, &*vk_descriptor_set_layout_)).front());
+
+		const vk::DescriptorBufferInfo descriptor_buffer_info(
+			*vk_game_framebuffer_buffer_,
+			0u,
+			viewport_size_.width * viewport_size_.height * 4);
+
+		vk_device_.updateDescriptorSets(
+			{
+				{
+					*vk_descriptor_set_,
+					0u,
+					0u,
+					1u,
+					vk::DescriptorType::eStorageBuffer,
+					nullptr,
+					&descriptor_buffer_info,
+					nullptr
+				},
+			},
+			{});
 	}
 }
 
@@ -85,7 +143,16 @@ GameLauncher::~GameLauncher()
 
 void GameLauncher::BeginFrame(const vk::CommandBuffer command_buffer)
 {
-	GG_UNUSED(command_buffer);
+	command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, *vk_pipeline_);
+
+	command_buffer.bindDescriptorSets(
+		vk::PipelineBindPoint::eCompute,
+		*vk_pipeline_layout_,
+		0u,
+		1u, &*vk_descriptor_set_,
+		0u, nullptr);
+
+	command_buffer.dispatch(1, 1, 1);
 }
 
 void GameLauncher::EndFrame(const vk::CommandBuffer command_buffer, const vk::Image swapchain_image)

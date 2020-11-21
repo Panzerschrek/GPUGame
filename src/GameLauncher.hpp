@@ -20,6 +20,12 @@ private:
 	vk::UniqueDeviceMemory vk_game_framebuffer_buffer_memory_;
 
 	vk::UniqueShaderModule game_shader_;
+
+	vk::UniqueDescriptorSetLayout vk_descriptor_set_layout_;
+	vk::UniquePipelineLayout vk_pipeline_layout_;
+	vk::UniquePipeline vk_pipeline_;
+	vk::UniqueDescriptorPool vk_descriptor_pool_;
+	vk::UniqueDescriptorSet vk_descriptor_set_;
 };
 
 } // namespace GPUGame
