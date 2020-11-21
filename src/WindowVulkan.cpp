@@ -182,7 +182,7 @@ WindowVulkan::WindowVulkan(const SystemWindow& system_window)
 		const VkBool32 supported= physical_device.getSurfaceSupportKHR(i, *vk_surface_);
 		if(supported != 0 &&
 			queue_family_properties[i].queueCount > 0 &&
-			(queue_family_properties[i].queueFlags & vk::QueueFlagBits::eGraphics) != vk::QueueFlagBits(0))
+			(queue_family_properties[i].queueFlags & vk::QueueFlagBits::eCompute) != vk::QueueFlagBits(0))
 		{
 			queue_family_index= i;
 			break;
