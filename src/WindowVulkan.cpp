@@ -409,7 +409,7 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 	command_buffer.end();
 
 	// Submit command buffer.
-	const vk::PipelineStageFlags wait_dst_stage_mask= vk::PipelineStageFlagBits::eColorAttachmentOutput;
+	const vk::PipelineStageFlags wait_dst_stage_mask= vk::PipelineStageFlagBits::eTransfer;
 	const vk::SubmitInfo vk_submit_info(
 		1u, &*current_frame_command_buffer_->image_available_semaphore,
 		&wait_dst_stage_mask,
