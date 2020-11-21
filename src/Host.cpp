@@ -11,11 +11,18 @@ Host::Host()
 	, window_vulkan_(system_window_)
 	, game_launcher_(window_vulkan_)
 	, ticks_counter_(std::chrono::seconds(1))
+	, init_time_(Clock::now())
+	, prev_tick_time_(init_time_)
 {
 }
 
 bool Host::Loop()
 {
+	const Clock::time_point tick_start_time= Clock::now();
+	prev_tick_time_ = tick_start_time;
+
+	const float time_s= float((tick_start_time - init_time_).count()) * float(Clock::duration::period::num) / float(Clock::duration::period::den);
+
 	const SystemEvents system_events= system_window_.ProcessEvents();
 	for(const SystemEvent& system_event : system_events)
 	{
@@ -29,7 +36,7 @@ bool Host::Loop()
 
 	{
 		const vk::CommandBuffer command_buffer= window_vulkan_.BeginFrame();
-		game_launcher_.BeginFrame(command_buffer);
+		game_launcher_.BeginFrame(command_buffer, time_s);
 	}
 
 	window_vulkan_.EndFrame(

@@ -18,11 +18,17 @@ public:
 	bool Loop();
 
 private:
+	using Clock= std::chrono::steady_clock;
+
+private:
 	SystemWindow system_window_;
 	WindowVulkan window_vulkan_;
 	GameLauncher game_launcher_;
 
 	TicksCounter ticks_counter_;
+
+	const Clock::time_point init_time_;
+	Clock::time_point prev_tick_time_;
 
 	bool quit_requested_= false;
 };

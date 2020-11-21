@@ -15,6 +15,12 @@ namespace Shaders
 
 }
 
+// Layout of this struct must match layout of same struct in shaders!
+struct Uniforms
+{
+	float time_s= 0.0f;
+};
+
 } // namespace
 
 GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
@@ -72,11 +78,16 @@ GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
 				vk::DescriptorSetLayoutCreateFlags(),
 				uint32_t(std::size(descriptor_set_layout_bindings)), descriptor_set_layout_bindings));
 
+		const vk::PushConstantRange vk_push_constant_range(
+			vk::ShaderStageFlagBits::eCompute,
+			0u,
+			sizeof(Uniforms));
+
 		vk_pipeline_layout_= vk_device_.createPipelineLayoutUnique(
 			vk::PipelineLayoutCreateInfo(
 				vk::PipelineLayoutCreateFlags(),
 				1u, &*vk_descriptor_set_layout_,
-				0u, nullptr));
+				1u, &vk_push_constant_range));
 
 		vk_pipeline_= vk_device_.createComputePipelineUnique(
 			nullptr,
@@ -141,7 +152,7 @@ GameLauncher::~GameLauncher()
 	vk_device_.waitIdle();
 }
 
-void GameLauncher::BeginFrame(const vk::CommandBuffer command_buffer)
+void GameLauncher::BeginFrame(const vk::CommandBuffer command_buffer, const float time_s)
 {
 	command_buffer.bindPipeline(vk::PipelineBindPoint::eCompute, *vk_pipeline_);
 
@@ -151,6 +162,15 @@ void GameLauncher::BeginFrame(const vk::CommandBuffer command_buffer)
 		0u,
 		1u, &*vk_descriptor_set_,
 		0u, nullptr);
+
+	Uniforms uniforms;
+	uniforms.time_s= time_s;
+	command_buffer.pushConstants(
+		*vk_pipeline_layout_,
+		vk::ShaderStageFlagBits::eCompute,
+		0,
+		sizeof(uniforms),
+		&uniforms);
 
 	command_buffer.dispatch(1, 1, 1);
 }

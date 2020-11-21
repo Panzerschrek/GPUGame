@@ -9,7 +9,7 @@ public:
 	GameLauncher(WindowVulkan& window_vulkan);
 	~GameLauncher();
 
-	void BeginFrame(vk::CommandBuffer command_buffer);
+	void BeginFrame(vk::CommandBuffer command_buffer, float time_s);
 	void EndFrame(vk::CommandBuffer command_buffer, vk::Image swapchain_image);
 
 private:
