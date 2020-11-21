@@ -7,7 +7,7 @@
 #define GG_ASSERT(x) \
 	{ assert(x); }
 #else
-#define KK_ASSERT(x) {}
+#define GG_ASSERT(x) {}
 #endif
 
 #define GG_UNUSED(x) (void)x
