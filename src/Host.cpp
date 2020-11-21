@@ -1,4 +1,5 @@
 #include "Host.hpp"
+#include "Log.hpp"
 #include <thread>
 
 
@@ -9,6 +10,7 @@ Host::Host()
 	: system_window_()
 	, window_vulkan_(system_window_)
 	, game_launcher_(window_vulkan_)
+	, ticks_counter_(std::chrono::seconds(1))
 {
 }
 
@@ -20,6 +22,10 @@ bool Host::Loop()
 		if(std::get_if<SystemEventTypes::QuitEvent>(&system_event) != nullptr)
 			return true;
 	}
+
+	ticks_counter_.Tick();
+	if( ticks_counter_.GetTotalTicks() % 60 == 0 )
+		Log::Info( "FPS: ", ticks_counter_.GetTicksFrequency());
 
 	{
 		const vk::CommandBuffer command_buffer= window_vulkan_.BeginFrame();
