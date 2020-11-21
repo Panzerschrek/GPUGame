@@ -5,6 +5,18 @@
 namespace GPUGame
 {
 
+namespace
+{
+
+namespace Shaders
+{
+
+#include "shaders/test.comp.h"
+
+}
+
+} // namespace
+
 GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
 	: vk_device_(window_vulkan.GetVulkanDevice())
 	, viewport_size_(window_vulkan.GetViewportSize())
@@ -54,6 +66,14 @@ GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
 		}
 
 		vk_device_.unmapMemory(*vk_game_framebuffer_buffer_memory_);
+	}
+
+	{ // Create shader.
+		game_shader_= vk_device_.createShaderModuleUnique(
+			vk::ShaderModuleCreateInfo(
+				vk::ShaderModuleCreateFlags(),
+				sizeof(Shaders::test_comp),
+				Shaders::test_comp));
 	}
 }
 

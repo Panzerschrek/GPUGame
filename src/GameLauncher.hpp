@@ -18,6 +18,8 @@ private:
 
 	vk::UniqueBuffer vk_game_framebuffer_buffer_;
 	vk::UniqueDeviceMemory vk_game_framebuffer_buffer_memory_;
+
+	vk::UniqueShaderModule game_shader_;
 };
 
 } // namespace GPUGame
