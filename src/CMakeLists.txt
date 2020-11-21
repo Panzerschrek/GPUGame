@@ -21,7 +21,11 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 	add_definitions(-DDEBUG)
 endif()
 
+# Search dependencies.
+find_package(SDL2 REQUIRED)
+find_package(Vulkan REQUIRED)
+
 file(GLOB_RECURSE SOURCES "*.cpp" "*.hpp")
 add_executable(GPUGame ${SOURCES})
-
-
+target_link_libraries(GPUGame PRIVATE ${SDL2_LIBRARIES} ${Vulkan_LIBRARIES})
+target_include_directories(GPUGame PRIVATE ${SDL2_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
