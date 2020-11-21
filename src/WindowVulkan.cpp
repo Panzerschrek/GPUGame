@@ -342,25 +342,7 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 			*current_frame_command_buffer_->image_available_semaphore,
 			vk::Fence()).value;
 
-	/*
-	// Begin render pass.
-	command_buffer.beginRenderPass(
-		vk::RenderPassBeginInfo(
-			*vk_render_pass_,
-			*framebuffers_[swapchain_image_index].framebuffer,
-			vk::Rect2D(vk::Offset2D(0, 0), viewport_size_),
-			0u, nullptr),
-		vk::SubpassContents::eInline);
-
-	// Draw into framebuffer.
-	for(const DrawFunction& draw_function : draw_functions)
-	{
-		draw_function(command_buffer);
-	}
-
-	// End render pass.
-	command_buffer.endRenderPass();
-	*/
+	const vk::Image current_swapchain_image= swapchain_images_[swapchain_image_index];
 
 	{
 		const vk::ImageMemoryBarrier image_memory_barrier_final(
@@ -369,7 +351,7 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 			vk::ImageLayout::eUndefined, vk::ImageLayout::eTransferDstOptimal,
 			vk_queue_family_index_,
 			vk_queue_family_index_,
-			swapchain_images_[swapchain_image_index],
+			current_swapchain_image,
 			vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0u, 1u, 0u, 1u));
 
 		command_buffer.pipelineBarrier(
@@ -383,7 +365,7 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 
 	for(const DrawFunction& draw_function : draw_functions)
 	{
-		draw_function(command_buffer, swapchain_images_[swapchain_image_index]);
+		draw_function(command_buffer, current_swapchain_image);
 	}
 
 	{
@@ -393,7 +375,7 @@ void WindowVulkan::EndFrame(const DrawFunctions& draw_functions)
 			vk::ImageLayout::eTransferDstOptimal, vk::ImageLayout::ePresentSrcKHR,
 			vk_queue_family_index_,
 			vk_queue_family_index_,
-			swapchain_images_[swapchain_image_index],
+			current_swapchain_image,
 			vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0u, 1u, 0u, 1u));
 
 		command_buffer.pipelineBarrier(
