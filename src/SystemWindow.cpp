@@ -102,8 +102,8 @@ SystemWindow::SystemWindow()
 	// TODO - check errors.
 	SDL_Init(SDL_INIT_VIDEO);
 
-	const int width = 640;
-	const int height= 480;
+	const int width = 320;
+	const int height= 200;
 
 	window_=
 		SDL_CreateWindow(

@@ -7,8 +7,8 @@ layout(binding= 0, std430) buffer frame_buffer
 
 void main()
 {
-	const int width= 640;
-	const int height= 480;
+	const int width= 320;
+	const int height= 200;
 	for( int y= 0; y < height; ++y )
 	for( int x= 0; x < width; ++x )
 	{
