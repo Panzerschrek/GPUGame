@@ -18,6 +18,7 @@ namespace Shaders
 // Layout of this struct must match layout of same struct in shaders!
 struct Uniforms
 {
+	int viewport_size[4]{};
 	float time_s= 0.0f;
 };
 
@@ -164,6 +165,8 @@ void GameLauncher::BeginFrame(const vk::CommandBuffer command_buffer, const floa
 		0u, nullptr);
 
 	Uniforms uniforms;
+	uniforms.viewport_size[0]= viewport_size_.width ;
+	uniforms.viewport_size[1]= viewport_size_.height;
 	uniforms.time_s= time_s;
 	command_buffer.pushConstants(
 		*vk_pipeline_layout_,
