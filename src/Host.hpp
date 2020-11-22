@@ -2,7 +2,7 @@
 #include "GameLauncher.hpp"
 #include "SystemWindow.hpp"
 #include "TicksCounter.hpp"
-#include "WindowVulkan.hpp"
+#include "WindowOpenGL.hpp"
 #include <chrono>
 
 
@@ -22,7 +22,7 @@ private:
 
 private:
 	SystemWindow system_window_;
-	WindowVulkan window_vulkan_;
+	WindowOpenGL window_opengl_;
 	GameLauncher game_launcher_;
 
 	TicksCounter ticks_counter_;

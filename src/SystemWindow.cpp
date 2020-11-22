@@ -110,7 +110,7 @@ SystemWindow::SystemWindow()
 			"GPUGame",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			width, height,
-			SDL_WINDOW_SHOWN | SDL_WINDOW_VULKAN);
+			SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
 
 	if(window_ == nullptr)
 		Log::FatalError("Could not create window");

@@ -23,7 +23,7 @@ endif()
 
 # Search dependencies.
 find_package(SDL2 REQUIRED)
-find_package(Vulkan REQUIRED)
+find_package(OpenGL REQUIRED)
 find_program(GLSLANGVALIDATOR glslangValidator)
 if(NOT GLSLANGVALIDATOR)
 	message(FATAL_ERROR "glslangValidator not found")
@@ -49,6 +49,6 @@ endforeach()
 
 file(GLOB_RECURSE SOURCES "*.cpp" "*.hpp")
 add_executable(GPUGame ${SOURCES} ${SHADERS} ${SHADERS_COMPILED})
-target_link_libraries(GPUGame PRIVATE ${SDL2_LIBRARIES} ${Vulkan_LIBRARIES})
-target_include_directories(GPUGame PRIVATE ${SDL2_INCLUDE_DIRS} ${Vulkan_INCLUDE_DIRS})
+target_link_libraries(GPUGame PRIVATE ${SDL2_LIBRARIES} GL)
+target_include_directories(GPUGame PRIVATE ${SDL2_INCLUDE_DIRS})
 target_include_directories(GPUGame PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
