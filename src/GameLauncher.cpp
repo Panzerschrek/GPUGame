@@ -9,11 +9,27 @@ namespace GPUGame
 
 static const char c_program_source[]=
 R"(
+int fib(int x )
+{
+	if( x <= 1 )
+		return 1;
+	return fib( x - 1 ) + fib( x - 2 );
+}
 
 kernel void entry( global int* frame_buffer )
 {
-	for( int i= 0 ; i < 320 * 200; ++i )
-		frame_buffer[ i ]= i;
+	for( int y= 0 ; y < 200; ++y )
+	for( int x= 0 ; x < 320; ++x )
+		frame_buffer[ x + y * 320 ]= y << 8;
+
+	for( int i= 0; i < 60; ++i )
+	{
+		int x= fib(i / 4);
+		frame_buffer[320 * 10 + i]= x;
+		frame_buffer[320 * 11 + i]= x;
+		frame_buffer[320 * 12 + i]= x;
+		frame_buffer[320 * 13 + i]= x;
+	}
 }
 
 )";
