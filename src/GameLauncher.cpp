@@ -9,6 +9,7 @@ namespace GPUGame
 
 static const char c_program_source[]=
 R"(
+
 int fib(int x )
 {
 	if( x <= 1 )
@@ -55,14 +56,12 @@ GameLauncher::GameLauncher()
 	cl_context_ = cl::Context(devices);
 	cl_queue_= cl::CommandQueue(cl_context_, device);
 
-	try
+	cl_program_= cl::Program(cl_context_, std::string(c_program_source));
+	const auto build_result= cl_program_.build(devices);
+	if( build_result != 0)
 	{
-		cl_program_= cl::Program(cl_context_, std::string(c_program_source));
-		cl_program_.build(devices);
-	}
-	catch(const std::exception& e)
-	{
-		Log::Warning("Build error: ", e.what());
+		Log::Warning("Program build error");
+		Log::Info(cl_program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device));
 	}
 
 	const size_t buffer_size= 320 * 200;
