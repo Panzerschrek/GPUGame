@@ -1,0 +1,1 @@
+clang -cc1 -triple spir -cl-std=CL2.0 test.cl -o test.ll -emit-llvm -O2
