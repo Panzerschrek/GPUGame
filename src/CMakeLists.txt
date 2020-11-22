@@ -49,6 +49,6 @@ endforeach()
 
 file(GLOB_RECURSE SOURCES "*.cpp" "*.hpp")
 add_executable(GPUGame ${SOURCES} ${SHADERS} ${SHADERS_COMPILED})
-target_link_libraries(GPUGame PRIVATE ${SDL2_LIBRARIES} GL)
+target_link_libraries(GPUGame PRIVATE ${SDL2_LIBRARIES} GL OpenCL)
 target_include_directories(GPUGame PRIVATE ${SDL2_INCLUDE_DIRS})
 target_include_directories(GPUGame PRIVATE ${CMAKE_CURRENT_BINARY_DIR})

@@ -36,6 +36,7 @@ bool Host::Loop()
 
 
 	window_opengl_.BeginFrame();
+	game_launcher_.RunFrame();
 	window_opengl_.EndFrame();
 
 	return false;
