@@ -84,11 +84,8 @@ void GameLauncher::RunFrame()
 	std::vector<uint32_t> buffer(320 * 200);
 	cl_queue_.enqueueReadBuffer(cl_frame_buffer_, CL_TRUE, 0, buffer.size() * sizeof(uint32_t), buffer.data());
 
-	//for(uint32_t& v : buffer)
-	//	v= 0x7F7F7F7F;
 
 	glDrawPixels(320, 200, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
-	glFinish();
 }
 
 } // namespace GPUGame
