@@ -29,6 +29,13 @@ WindowOpenGL::WindowOpenGL(const SystemWindow& system_window)
 	gl_context_= SDL_GL_CreateContext(system_window.GetSDLWindow());
 	if(gl_context_ == nullptr)
 		Log::FatalError("Could not create OpenGL context");
+
+	Log::Info("");
+	Log::Info( "OpenGL configuration: " );
+	Log::Info( "Vendor: ", glGetString( GL_VENDOR ) );
+	Log::Info( "Renderer: ", glGetString( GL_RENDERER ) );
+	Log::Info( "Version: ", glGetString( GL_VERSION ) );
+	Log::Info("");
 }
 
 WindowOpenGL::~WindowOpenGL()
