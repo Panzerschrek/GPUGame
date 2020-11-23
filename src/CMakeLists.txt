@@ -22,7 +22,9 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 # Search dependencies.
-find_package(SDL2 REQUIRED)
+set(SDL2_DIR "C:/Users/user/Documents/Projects/other/SDL2-2.0.10-vc")
+set(SDL2_INCLUDE_DIRS ${SDL2_DIR}/include)
+set(SDL2_LIBRARIES ${SDL2_DIR}/lib/x64/SDL2.lib)
 find_package(Vulkan REQUIRED)
 find_program(GLSLANGVALIDATOR glslangValidator)
 if(NOT GLSLANGVALIDATOR)
