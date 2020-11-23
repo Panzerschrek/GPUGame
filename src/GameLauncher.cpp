@@ -53,6 +53,7 @@ GameLauncher::GameLauncher(WindowVulkan& window_vulkan)
 		vk_game_framebuffer_buffer_memory_= vk_device_.allocateMemoryUnique(vk_memory_allocate_info);
 		vk_device_.bindBufferMemory(*vk_game_framebuffer_buffer_, *vk_game_framebuffer_buffer_memory_, 0u);
 	}
+	if(false)
 	{// Fill buffer with initial values.
 		void* buffer_data_mapped= nullptr;
 		const size_t memory_size= viewport_size_.width * viewport_size_.height * 4;
