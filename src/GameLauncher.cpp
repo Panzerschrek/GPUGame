@@ -58,7 +58,10 @@ GameLauncher::GameLauncher()
 	try
 	{
 		cl_program_= cl::Program(cl_context_, std::string(c_program_source));
-		cl_program_.build(devices);
+		if( cl_program_.build(devices) != 0 )
+		{
+			Log::Warning( "Program build failed: ", cl_program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) );
+		}
 	}
 	catch(const std::exception& e)
 	{
