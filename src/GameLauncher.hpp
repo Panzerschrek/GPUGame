@@ -13,7 +13,7 @@ public:
 	GameLauncher();
 	~GameLauncher();
 
-	void RunFrame();
+	void RunFrame(float time_s);
 
 private:
 	cl::Context cl_context_;

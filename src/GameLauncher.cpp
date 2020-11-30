@@ -21,21 +21,26 @@ int fib(int x )
 
 void SetBlack( int* x ){ *x= 0; }
 
-kernel void entry( global int* frame_buffer )
+kernel void entry( global int* frame_buffer, int width, int height, float time_s )
 {
 	SetBlack( frame_buffer );
-	for( int y= 0 ; y < 200; ++y )
-	for( int x= 0 ; x < 320; ++x )
-		frame_buffer[ x + y * 320 ]= y << 8;
+	for( int y= 0 ; y < height; ++y )
+	for( int x= 0 ; x < width ; ++x )
+		frame_buffer[ x + y * width ]= (y * 255 / height) << 8;
 
-	for( int i= 0; i < 60; ++i )
+	for( int x= 0 ; x < width ; ++x )
 	{
-		int x= fib(i / 4);
-		frame_buffer[320 * 10 + i]= x;
-		frame_buffer[320 * 11 + i]= x;
-		frame_buffer[320 * 12 + i]= x;
-		frame_buffer[320 * 13 + i]= x;
+		float c= sin(((float)x) / 16.0f + time_s);
+		int r= (int)( (c * 0.5f + 0.5f) * 255.0f );
+		for( int y= height * 3 / 8 ; y < height * 5 / 8; ++y )
+		{
+			frame_buffer[ x + y * width ] |= r;
+		}
 	}
+
+	int b= 66;
+	SetBlack( &b );
+	frame_buffer[width * height / 2 + height / 2]= b;
 }
 
 )";
@@ -92,20 +97,24 @@ GameLauncher::~GameLauncher()
 
 }
 
-void GameLauncher::RunFrame()
+void GameLauncher::RunFrame(const float time_s)
 {
+	const int width= 320;
+	const int height= 200;
+
 	cl::Kernel func(cl_program_, "entry");
 	func.setArg(0, cl_frame_buffer_);
+	func.setArg(1, width);
+	func.setArg(2, height);
+	func.setArg(3, time_s);
 
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 
-	std::vector<uint32_t> buffer(320 * 200);
+	std::vector<uint32_t> buffer(width * height);
 	cl_queue_.enqueueReadBuffer(cl_frame_buffer_, CL_TRUE, 0, buffer.size() * sizeof(uint32_t), buffer.data());
 
-	//for(uint32_t& v : buffer)
-	//	v= 0x7F7F7F7F;
 
-	glDrawPixels(320, 200, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 	glFinish();
 }
 
