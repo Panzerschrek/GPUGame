@@ -48,7 +48,8 @@ foreach(SHADER_FILE ${SHADERS})
 	list(APPEND SHADERS_COMPILED ${OUT_FILE_H})
 endforeach()
 
-include_directories("C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.1/include")
+include_directories(../../OpenCL-CLHPP/include)
+include_directories(../../OpenCL-Headers/)
 set(OPENCL_LIB "C:/Program Files/NVIDIA GPU Computing Toolkit/CUDA/v11.1/lib/x64/OpenCL.lib")
 
 file(GLOB_RECURSE SOURCES "*.cpp" "*.hpp")
