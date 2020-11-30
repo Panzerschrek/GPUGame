@@ -2,48 +2,10 @@
 #include "Assert.hpp"
 #include "Log.hpp"
 #include <SDL_opengl.h>
-
+#include <cstdio>
 
 namespace GPUGame
 {
-
-static const char c_program_source[]=
-R"(
-int fib(int x )
-{
-/*
-	if( x <= 1 )
-		return 1;
-	return fib( x - 1 ) + fib( x - 2 );
-*/
-	return 5;
-}
-
-void SetBlack( int* x ){ *x= 0; }
-
-kernel void entry( global int* frame_buffer, int width, int height, float time_s )
-{
-	SetBlack( frame_buffer );
-	for( int y= 0 ; y < height; ++y )
-	for( int x= 0 ; x < width ; ++x )
-		frame_buffer[ x + y * width ]= (y * 255 / height) << 8;
-
-	for( int x= 0 ; x < width ; ++x )
-	{
-		float c= sin(((float)x) / 16.0f + time_s);
-		int r= (int)( (c * 0.5f + 0.5f) * 255.0f );
-		for( int y= height * 3 / 8 ; y < height * 5 / 8; ++y )
-		{
-			frame_buffer[ x + y * width ] |= r;
-		}
-	}
-
-	int b= 66;
-	SetBlack( &b );
-	frame_buffer[width * height / 2 + height / 2]= b;
-}
-
-)";
 
 GameLauncher::GameLauncher()
 {
@@ -67,7 +29,9 @@ GameLauncher::GameLauncher()
 		Log::Info(
 			"Device: ", device.getInfo<CL_DEVICE_NAME>(),
 			" vendor: ", device.getInfo<CL_DEVICE_VENDOR>(),
-			" profile: ", device.getInfo<CL_DEVICE_PROFILE>() );
+			" profile: ", device.getInfo<CL_DEVICE_PROFILE>(),
+			" version: ", device.getInfo<CL_DEVICE_VERSION>(),
+			" platform: ", device.getInfo<CL_DEVICE_PLATFORM>() );
 
 	devices.resize(1);
 	cl::Device& device= devices.front();
@@ -77,10 +41,35 @@ GameLauncher::GameLauncher()
 
 	try
 	{
-		cl_program_= cl::Program(cl_context_, std::string(c_program_source));
-		if( cl_program_.build(devices, "-cl-std=CL2.0") != 0 )
+		FILE* const f= std::fopen("test.sprv", "rb");
+
+		std::fseek( f, 0, SEEK_END );
+		const auto file_size= std::ftell( f );
+		std::fseek( f, 0, SEEK_SET );
+
+		std::vector<char> binary_data;
+		binary_data.resize( file_size );
+		std::fread( binary_data.data(), 1, binary_data.size(), f );
+
+		std::fclose( f );
+
+		auto func= reinterpret_cast<clCreateProgramWithILKHR_fn>(
+			clGetExtensionFunctionAddressForPlatform(
+				device.getInfo<CL_DEVICE_PLATFORM>(),
+				"clCreateProgramWithILKHR") );
+
+		if( func != nullptr )
 		{
-			Log::Warning( "Program build failed: ", cl_program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) );
+			cl_program_.SetProgram( func( cl_context_.get(), binary_data.data(), binary_data.size(), nullptr ) );
+
+			cl_device_id dev= device.get();
+			clBuildProgram( cl_program_.get(), 1, &dev, "", nullptr, nullptr );
+
+			char buff[1024]{};
+			size_t s= 0;
+			clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_LOG, sizeof(buff), buff, &s );
+			buff[s]= 0;
+			Log::Info( buff );
 		}
 	}
 	catch(const std::exception& e)
