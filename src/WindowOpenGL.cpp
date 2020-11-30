@@ -36,6 +36,8 @@ WindowOpenGL::WindowOpenGL(const SystemWindow& system_window)
 	Log::Info( "Renderer: ", glGetString( GL_RENDERER ) );
 	Log::Info( "Version: ", glGetString( GL_VERSION ) );
 	Log::Info("");
+
+	SDL_GL_SetSwapInterval(1);
 }
 
 WindowOpenGL::~WindowOpenGL()
