@@ -60,16 +60,23 @@ GameLauncher::GameLauncher()
 
 		if( func != nullptr )
 		{
-			cl_program_.SetProgram( func( cl_context_.get(), binary_data.data(), binary_data.size(), nullptr ) );
+			cl_int code= 0;
+			cl_program_.SetProgram( func( cl_context_.get(), binary_data.data(), binary_data.size(), &code ) );
+			Log::Info( "Set program code: ", code );
 
 			cl_device_id dev= device.get();
-			clBuildProgram( cl_program_.get(), 1, &dev, "", nullptr, nullptr );
+			code= clBuildProgram( cl_program_.get(), 1, &dev, "", nullptr, nullptr );
+			Log::Info( "Build program code: ", code );
 
 			char buff[1024]{};
 			size_t s= 0;
 			clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_LOG, sizeof(buff), buff, &s );
 			buff[s]= 0;
-			Log::Info( buff );
+			Log::Info( "Build log: ", buff );
+
+			clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_STATUS, sizeof(buff), buff, &s );
+			buff[s]= 0;
+			Log::Info( "Build status: ", buff );
 		}
 	}
 	catch(const std::exception& e)
