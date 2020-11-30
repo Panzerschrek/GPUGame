@@ -43,6 +43,14 @@ kernel void entry(
 		frame_buffer[width * 53 + i]= x;
 	}
 
+	constexpr uint32_t c_local_array_size= 16384;
+	uint32_t my_local_array[c_local_array_size];
+	for( uint32_t i= 0; i < c_local_array_size; ++i )
+		my_local_array[i]= i * i + g_dst_pixel;
+
+	for( uint32_t i= 0; i < c_local_array_size; ++i )
+		frame_buffer[ width * height / 2 + i ]= my_local_array[c_local_array_size - 1 - i];
+
 	frame_buffer[ g_dst_pixel ]= fill_color;
 	++g_dst_pixel;
 
