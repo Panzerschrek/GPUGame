@@ -64,6 +64,8 @@ GameLauncher::GameLauncher()
 
 	if (platforms.empty())
 		Log::FatalError("OpenCL platforms not found.");
+	for(const cl::Platform& platform : platforms)
+		Log::Info( "Platform: ", platform.getInfo<CL_PLATFORM_NAME>(), " ", platform.getInfo<CL_PLATFORM_VERSION>() );
 
 	std::vector<cl::Device> devices;
 	platforms.front().getDevices(CL_DEVICE_TYPE_GPU, &devices);
@@ -71,7 +73,7 @@ GameLauncher::GameLauncher()
 	if(devices.empty())
 		Log::FatalError("No devices");
 	for(const cl::Device& device : devices)
-		Log::Info("Device: ", device.getInfo<CL_DEVICE_NAME>());
+		Log::Info("Device: ", device.getInfo<CL_DEVICE_NAME>(), " ", device.getInfo<CL_DEVICE_VERSION>() );
 
 	cl::Device& device= devices.front();
 
