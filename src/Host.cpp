@@ -8,8 +8,7 @@ namespace GPUGame
 
 Host::Host()
 	: system_window_()
-	, window_opengl_(system_window_)
-	, game_launcher_()
+	, game_launcher_(system_window_)
 	, ticks_counter_(std::chrono::seconds(1))
 	, init_time_(Clock::now())
 	, prev_tick_time_(init_time_)
@@ -35,9 +34,9 @@ bool Host::Loop()
 		Log::Info( "FPS: ", ticks_counter_.GetTicksFrequency());
 
 
-	window_opengl_.BeginFrame();
+	system_window_.BeginFrame();
 	game_launcher_.RunFrame(time_s);
-	window_opengl_.EndFrame();
+	system_window_.EndFrame();
 
 	return false;
 }

@@ -102,26 +102,42 @@ SystemWindow::SystemWindow()
 	// TODO - check errors.
 	SDL_Init(SDL_INIT_VIDEO);
 
-	const int width = 320;
-	const int height= 200;
+	const int width = 640;
+	const int height= 480;
 
 	window_=
 		SDL_CreateWindow(
 			"GPUGame",
 			SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
 			width, height,
-			SDL_WINDOW_SHOWN | SDL_WINDOW_OPENGL);
+			SDL_WINDOW_SHOWN);
 
 	if(window_ == nullptr)
 		Log::FatalError("Could not create window");
 
 	Log::Info("Window created with size ", width, "x", height);
+
+	window_surface_= SDL_GetWindowSurface( window_ );
 }
 
 SystemWindow::~SystemWindow()
 {
 	Log::Info("Destroying system window");
 	SDL_DestroyWindow(window_);
+}
+
+void SystemWindow::BeginFrame()
+{
+}
+
+void SystemWindow::EndFrame()
+{
+	SDL_UpdateWindowSurface( window_ );
+}
+
+SDL_Surface& SystemWindow::GetWindowSurface()
+{
+	return *window_surface_;
 }
 
 SystemEvents SystemWindow::ProcessEvents()
@@ -215,11 +231,6 @@ InputState SystemWindow::GetInputState()
 		result.mouse[size_t(TranslateMouseButton(Uint8(i)))]= (SDL_BUTTON(i) & mouse_state) != 0;
 
 	return result;
-}
-
-SDL_Window* SystemWindow::GetSDLWindow() const
-{
-	return window_;
 }
 
 } // namespace GPUGame
