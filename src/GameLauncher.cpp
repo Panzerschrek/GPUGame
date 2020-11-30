@@ -11,13 +11,19 @@ static const char c_program_source[]=
 R"(
 int fib(int x )
 {
+/*
 	if( x <= 1 )
 		return 1;
 	return fib( x - 1 ) + fib( x - 2 );
+*/
+	return 5;
 }
+
+void SetBlack( int* x ){ *x= 0; }
 
 kernel void entry( global int* frame_buffer )
 {
+	SetBlack( frame_buffer );
 	for( int y= 0 ; y < 200; ++y )
 	for( int x= 0 ; x < 320; ++x )
 		frame_buffer[ x + y * 320 ]= y << 8;
@@ -42,14 +48,23 @@ GameLauncher::GameLauncher()
 	if (platforms.empty())
 		Log::FatalError("OpenCL platforms not found.");
 
+	cl::Platform selected_platform;
+	for( const cl::Platform& platform : platforms)
+		Log::Info( "Platform: ", platform.getInfo<CL_PLATFORM_VERSION>() );
+	selected_platform= platforms.back();
+
 	std::vector<cl::Device> devices;
-	platforms.front().getDevices(CL_DEVICE_TYPE_GPU, &devices);
+	selected_platform.getDevices(CL_DEVICE_TYPE_GPU, &devices);
 
 	if(devices.empty())
 		Log::FatalError("No devices");
 	for(const cl::Device& device : devices)
-		Log::Info("Device: ", device.getInfo<CL_DEVICE_NAME>());
+		Log::Info(
+			"Device: ", device.getInfo<CL_DEVICE_NAME>(),
+			" vendor: ", device.getInfo<CL_DEVICE_VENDOR>(),
+			" profile: ", device.getInfo<CL_DEVICE_PROFILE>() );
 
+	devices.resize(1);
 	cl::Device& device= devices.front();
 
 	cl_context_ = cl::Context(devices);
@@ -58,7 +73,7 @@ GameLauncher::GameLauncher()
 	try
 	{
 		cl_program_= cl::Program(cl_context_, std::string(c_program_source));
-		if( cl_program_.build(devices) != 0 )
+		if( cl_program_.build(devices, "-cl-std=CL2.0") != 0 )
 		{
 			Log::Warning( "Program build failed: ", cl_program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) );
 		}
