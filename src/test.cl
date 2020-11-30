@@ -12,12 +12,15 @@ uint32_t fib(uint32_t x )
 
 void SetBlack( uint32_t& x ){ x= 0u; }
 
-kernel void entry( global uint32_t* frame_buffer, uint32_t width, uint32_t height, const float time_s )
+kernel void entry(
+	global uint32_t* frame_buffer,
+	const uint32_t width,
+	const uint32_t height,
+	const float time_s )
 {
-	SetBlack( frame_buffer[0] );
 	for( uint32_t y= 0 ; y < height; ++y )
 	for( uint32_t x= 0 ; x < width ; ++x )
-		frame_buffer[ x + y * width ]= (y * 255u / height) << 8;
+		frame_buffer[ x + y * width ]= ( (y * 255u / height) << 8 ) | ( x * 255u / width );
 
 	for( uint32_t x= 0 ; x < width ; ++x )
 	{
@@ -28,7 +31,6 @@ kernel void entry( global uint32_t* frame_buffer, uint32_t width, uint32_t heigh
 			frame_buffer[ x + y * width ] |= r << 16;
 		}
 	}
-
 	for( uint32_t i= 0; i < 60; ++i )
 	{
 		uint32_t x= fib(i / 4);
@@ -41,4 +43,5 @@ kernel void entry( global uint32_t* frame_buffer, uint32_t width, uint32_t heigh
 	uint32_t b= 66;
 	SetBlack( b );
 	frame_buffer[width * height / 2 + height / 2]= b;
+
 }

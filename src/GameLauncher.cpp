@@ -82,14 +82,13 @@ GameLauncher::GameLauncher()
 
 GameLauncher::~GameLauncher()
 {
-
 }
 
 void GameLauncher::RunFrame(const float time_s)
 {
 	cl::Kernel func(cl_program_, "entry");
 	func.setArg(0, cl_frame_buffer_);
-	func.setArg(1, window_width_);
+	func.setArg(1, window_width_ );
 	func.setArg(2, window_height_);
 	func.setArg(3, time_s);
 
@@ -97,7 +96,6 @@ void GameLauncher::RunFrame(const float time_s)
 
 	std::vector<uint32_t> buffer(window_width_ * window_height_);
 	cl_queue_.enqueueReadBuffer(cl_frame_buffer_, CL_TRUE, 0, buffer.size() * sizeof(uint32_t), buffer.data());
-
 
 	glDrawPixels(window_width_, window_height_, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 	glFinish();
