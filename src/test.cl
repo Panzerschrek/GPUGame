@@ -12,7 +12,7 @@ uint32_t fib(uint32_t x )
 
 void SetBlack( uint32_t& x ){ x= 0u; }
 
-global uint32_t cpp_global_variable= 0x00000000;
+global uint32_t g_dst_pixel= 0;
 
 kernel void entry(
 	global uint32_t* const frame_buffer,
@@ -43,8 +43,8 @@ kernel void entry(
 		frame_buffer[width * 53 + i]= x;
 	}
 
-	frame_buffer[width * height * 3 / 4 + width / 2 ]= cpp_global_variable;
-	cpp_global_variable= fill_color;
+	frame_buffer[ g_dst_pixel ]= fill_color;
+	++g_dst_pixel;
 
 	uint32_t b= 66;
 	SetBlack( b );
