@@ -12,7 +12,7 @@ uint32_t fib(uint32_t x )
 
 void SetBlack( uint32_t& x ){ x= 0u; }
 
-kernel void entry( global uint32_t* frame_buffer, uint32_t width, uint32_t height, float time_s )
+kernel void entry( global uint32_t* frame_buffer, uint32_t width, uint32_t height, const float time_s )
 {
 	SetBlack( frame_buffer[0] );
 	for( uint32_t y= 0 ; y < height; ++y )
@@ -21,8 +21,8 @@ kernel void entry( global uint32_t* frame_buffer, uint32_t width, uint32_t heigh
 
 	for( uint32_t x= 0 ; x < width ; ++x )
 	{
-		const auto c= sin(float(x) / 16.0f + time_s);
-		const auto r= uint32_t( (c * 0.5f + 0.5f) * 255.0f );
+		const auto s= sin(float(x) / 16.0f + time_s);
+		const auto r= uint32_t( (s * 0.5f + 0.5f) * 255.0f );
 		for( uint32_t y= height * 3 / 8 ; y < height * 5 / 8; ++y )
 		{
 			frame_buffer[ x + y * width ] |= r << 16;

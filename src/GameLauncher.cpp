@@ -2,7 +2,6 @@
 #include "Assert.hpp"
 #include "Log.hpp"
 #include <SDL_opengl.h>
-#include <cstdio>
 
 namespace GPUGame
 {
@@ -43,17 +42,9 @@ GameLauncher::GameLauncher()
 
 	try
 	{
-		FILE* const f= std::fopen("test.sprv", "rb");
-
-		std::fseek( f, 0, SEEK_END );
-		const auto file_size= std::ftell( f );
-		std::fseek( f, 0, SEEK_SET );
-
-		std::vector<char> binary_data;
-		binary_data.resize( file_size );
-		std::fread( binary_data.data(), 1, binary_data.size(), f );
-
-		std::fclose( f );
+		#include "test.sprv.h"
+		const void* const program_data= c_cl_program_spirv_file_content;
+		const size_t program_size= sizeof(c_cl_program_spirv_file_content);
 
 		auto func= reinterpret_cast<clCreateProgramWithILKHR_fn>(
 			clGetExtensionFunctionAddressForPlatform(
@@ -63,7 +54,7 @@ GameLauncher::GameLauncher()
 		if( func != nullptr )
 		{
 			cl_int code= 0;
-			cl_program_.SetProgram( func( cl_context_.get(), binary_data.data(), binary_data.size(), &code ) );
+			cl_program_.SetProgram( func( cl_context_.get(), program_data, program_size, &code ) );
 			Log::Info( "Set program code: ", code );
 
 			cl_device_id dev= device.get();
