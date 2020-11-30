@@ -1,6 +1,6 @@
 #pragma once
 
-#define CL_HPP_ENABLE_EXCEPTIONS
+//#define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 200
 #define CL_HPP_TARGET_OPENCL_VERSION 200
 //#define CL_HPP_USE_IL_KHR
@@ -30,11 +30,7 @@ private:
 
 	cl::Context cl_context_;
 	cl::CommandQueue cl_queue_;
-#if 0
 	MyProgram cl_program_;
-#else
-	cl::Program cl_program_;
-#endif
 	cl::Buffer cl_frame_buffer_;
 };
 

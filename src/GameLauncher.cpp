@@ -7,23 +7,10 @@ namespace GPUGame
 {
 
 const char c_program_source[]= R"(
-global int my_global_variable = 0x00000000u;
+int my_global_variable = 0x00000000u;
 
-kernel void entry(
-	global int * frame_buffer,
-	int width,
-	int height,
-	int fill_color,
-	float time_s )
-{
-	for( int y= 0 ; y < height; ++y )
-	for( int x= 0 ; x < width ; ++x )
-		frame_buffer[ x + y * width ]= ( (y * 255u / height) << 8 ) | ( x * 255u / width );
-
-	frame_buffer[width * height * 3 / 4 + width / 2 ]= my_global_variable;
-	my_global_variable= fill_color;
-
-}
+void SetGlobal(int x){ my_global_variable= x; }
+int GetGlobal() { return my_global_variable; }
 )";
 
 GameLauncher::GameLauncher()
@@ -62,10 +49,10 @@ GameLauncher::GameLauncher()
 
 	try
 	{
-#if 0
+#if 1
 
 		#include "test.sprv.h"
-		const void* const program_data= c_cl_program_spirv_file_content;
+		const unsigned char* program_data= c_cl_program_spirv_file_content;
 		const size_t program_size= sizeof(c_cl_program_spirv_file_content);
 
 		auto func= reinterpret_cast<clCreateProgramWithILKHR_fn>(
@@ -75,13 +62,26 @@ GameLauncher::GameLauncher()
 
 		if( func != nullptr )
 		{
-			cl_int code= 0;
-			cl_program_.SetProgram( func( cl_context_.get(), program_data, program_size, &code ) );
-			Log::Info( "Set program code: ", code );
-
 			cl_device_id dev= device.get();
-			code= clBuildProgram( cl_program_.get(), 1, &dev, "", nullptr, nullptr );
-			Log::Info( "Build program code: ", code );
+
+			cl_int code= 0;
+
+			auto program_spirv= clCreateProgramWithBinary( cl_context_.get(), 1u, &dev, &program_size, &program_data, nullptr, &code );
+			Log::Info( "clCreateProgramWithILKHR code: ", code );
+
+			const char* text_data= c_program_source;
+			const size_t text_size= sizeof(c_program_source);
+			auto program_text= clCreateProgramWithSource( cl_context_.get(), 1u, &text_data, &text_size, &code );
+			Log::Info( "clCreateProgramWithSource code: ", code );
+
+			code= clCompileProgram( program_text, 1, &dev, "-cl-std=CL2.0", 0, nullptr, nullptr, nullptr, nullptr );
+			Log::Info( "clCompileProgram code: ", code );
+
+			const cl_program programs[2]{ program_text, program_spirv };
+			auto program_combined= clLinkProgram( cl_context_.get(), 1, &dev, "", 2, programs, nullptr, nullptr, &code );
+			Log::Info( "clLinkProgram code: ", code );
+
+			cl_program_.SetProgram( program_combined );
 
 			char buff[1024]{};
 			size_t s= 0;
