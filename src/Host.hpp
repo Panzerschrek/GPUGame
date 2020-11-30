@@ -21,9 +21,9 @@ private:
 	using Clock= std::chrono::steady_clock;
 
 private:
+	GameLauncher game_launcher_;
 	SystemWindow system_window_;
 	WindowOpenGL window_opengl_;
-	GameLauncher game_launcher_;
 
 	TicksCounter ticks_counter_;
 

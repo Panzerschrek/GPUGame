@@ -1,5 +1,5 @@
 #include "Host.hpp"
-
+#include <SDL.h>
 
 namespace GPUGame
 {
@@ -19,7 +19,7 @@ int Main()
 
 } // namespace GPUGame
 
-int main()
+extern "C" int main( int argc, char *argv[] )
 {
 	return GPUGame::Main();
 }

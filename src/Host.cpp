@@ -7,9 +7,9 @@ namespace GPUGame
 {
 
 Host::Host()
-	: system_window_()
+	: game_launcher_()
+	, system_window_()
 	, window_opengl_(system_window_)
-	, game_launcher_()
 	, ticks_counter_(std::chrono::seconds(1))
 	, init_time_(Clock::now())
 	, prev_tick_time_(init_time_)
