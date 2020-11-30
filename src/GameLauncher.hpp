@@ -25,6 +25,9 @@ private:
 	};
 
 private:
+	const uint32_t window_width_;
+	const uint32_t window_height_;
+
 	cl::Context cl_context_;
 	cl::CommandQueue cl_queue_;
 	MyProgram cl_program_;

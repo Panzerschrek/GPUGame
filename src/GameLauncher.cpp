@@ -8,6 +8,8 @@ namespace GPUGame
 {
 
 GameLauncher::GameLauncher()
+	: window_width_ (320)
+	, window_height_(200)
 {
 	std::vector<cl::Platform> platforms;
 	cl::Platform::get(&platforms);
@@ -84,8 +86,7 @@ GameLauncher::GameLauncher()
 		Log::Warning("Build error: ", e.what());
 	}
 
-	const size_t buffer_size= 320 * 200;
-	cl_frame_buffer_= cl::Buffer(cl_context_, CL_MEM_READ_WRITE, buffer_size * 4);
+	cl_frame_buffer_= cl::Buffer(cl_context_, CL_MEM_READ_WRITE, window_width_ * window_height_ * 4);
 }
 
 GameLauncher::~GameLauncher()
@@ -95,22 +96,19 @@ GameLauncher::~GameLauncher()
 
 void GameLauncher::RunFrame(const float time_s)
 {
-	const int width= 320;
-	const int height= 200;
-
 	cl::Kernel func(cl_program_, "entry");
 	func.setArg(0, cl_frame_buffer_);
-	func.setArg(1, width);
-	func.setArg(2, height);
+	func.setArg(1, window_width_);
+	func.setArg(2, window_height_);
 	func.setArg(3, time_s);
 
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 
-	std::vector<uint32_t> buffer(width * height);
+	std::vector<uint32_t> buffer(window_width_ * window_height_);
 	cl_queue_.enqueueReadBuffer(cl_frame_buffer_, CL_TRUE, 0, buffer.size() * sizeof(uint32_t), buffer.data());
 
 
-	glDrawPixels(width, height, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
+	glDrawPixels(window_width_, window_height_, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
 	glFinish();
 }
 
