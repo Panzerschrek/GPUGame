@@ -21,7 +21,7 @@ bool Host::Loop()
 	const Clock::time_point tick_start_time= Clock::now();
 	prev_tick_time_ = tick_start_time;
 
-	//const float time_s= float((tick_start_time - init_time_).count()) * float(Clock::duration::period::num) / float(Clock::duration::period::den);
+	const float time_s= float((tick_start_time - init_time_).count()) * float(Clock::duration::period::num) / float(Clock::duration::period::den);
 
 	const SystemEvents system_events= system_window_.ProcessEvents();
 	for(const SystemEvent& system_event : system_events)
@@ -36,7 +36,7 @@ bool Host::Loop()
 
 
 	window_opengl_.BeginFrame();
-	game_launcher_.RunFrame();
+	game_launcher_.RunFrame(time_s);
 	window_opengl_.EndFrame();
 
 	return false;
