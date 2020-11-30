@@ -6,13 +6,6 @@
 namespace GPUGame
 {
 
-const char c_program_source[]= R"(
-int my_global_variable = 0x00000000u;
-
-void SetGlobal(int x){ my_global_variable= x; }
-int GetGlobal() { return my_global_variable; }
-)";
-
 GameLauncher::GameLauncher()
 	: window_width_ (320)
 	, window_height_(200)
@@ -49,56 +42,41 @@ GameLauncher::GameLauncher()
 
 	try
 	{
-#if 1
 
 		#include "test.sprv.h"
 		const unsigned char* program_data= c_cl_program_spirv_file_content;
 		const size_t program_size= sizeof(c_cl_program_spirv_file_content);
 
-		auto func= reinterpret_cast<clCreateProgramWithILKHR_fn>(
-			clGetExtensionFunctionAddressForPlatform(
-				device.getInfo<CL_DEVICE_PLATFORM>(),
-				"clCreateProgramWithILKHR") );
+		cl_device_id dev= device.get();
 
-		if( func != nullptr )
-		{
-			cl_device_id dev= device.get();
+		cl_int code= 0;
 
-			cl_int code= 0;
+		auto program_spirv= clCreateProgramWithBinary( cl_context_.get(), 1u, &dev, &program_size, &program_data, nullptr, &code );
+		Log::Info( "clCreateProgramWithBinary code: ", code );
 
-			auto program_spirv= clCreateProgramWithBinary( cl_context_.get(), 1u, &dev, &program_size, &program_data, nullptr, &code );
-			Log::Info( "clCreateProgramWithILKHR code: ", code );
+		const char* text_data= "";
+		const size_t text_size= 0;
+		auto program_text= clCreateProgramWithSource( cl_context_.get(), 1u, &text_data, &text_size, &code );
+		Log::Info( "clCreateProgramWithSource code: ", code );
 
-			const char* text_data= c_program_source;
-			const size_t text_size= sizeof(c_program_source);
-			auto program_text= clCreateProgramWithSource( cl_context_.get(), 1u, &text_data, &text_size, &code );
-			Log::Info( "clCreateProgramWithSource code: ", code );
+		code= clCompileProgram( program_text, 1, &dev, "-cl-std=CL2.0", 0, nullptr, nullptr, nullptr, nullptr );
+		Log::Info( "clCompileProgram code: ", code );
 
-			code= clCompileProgram( program_text, 1, &dev, "-cl-std=CL2.0", 0, nullptr, nullptr, nullptr, nullptr );
-			Log::Info( "clCompileProgram code: ", code );
+		const cl_program programs[2]{ program_text, program_spirv };
+		auto program_combined= clLinkProgram( cl_context_.get(), 1, &dev, "", 2, programs, nullptr, nullptr, &code );
+		Log::Info( "clLinkProgram code: ", code );
 
-			const cl_program programs[2]{ program_text, program_spirv };
-			auto program_combined= clLinkProgram( cl_context_.get(), 1, &dev, "", 2, programs, nullptr, nullptr, &code );
-			Log::Info( "clLinkProgram code: ", code );
+		cl_program_.SetProgram( program_combined );
 
-			cl_program_.SetProgram( program_combined );
+		char buff[1024]{};
+		size_t s= 0;
+		clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_LOG, sizeof(buff), buff, &s );
+		buff[s]= 0;
+		Log::Info( "Build log: ", buff );
 
-			char buff[1024]{};
-			size_t s= 0;
-			clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_LOG, sizeof(buff), buff, &s );
-			buff[s]= 0;
-			Log::Info( "Build log: ", buff );
-
-			clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_STATUS, sizeof(buff), buff, &s );
-			buff[s]= 0;
-			Log::Info( "Build status: ", buff );
-		}
-
-#else
-		cl_program_= cl::Program(cl_context_, std::string(c_program_source));
-		if( cl_program_.build(devices, "-cl-std=CL2.0") != 0 )
-			Log::Warning( "Program build failed: ", cl_program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) );
-#endif
+		clGetProgramInfo( cl_program_.get(), CL_PROGRAM_BUILD_STATUS, sizeof(buff), buff, &s );
+		buff[s]= 0;
+		Log::Info( "Build status: ", buff );
 	}
 	catch(const std::exception& e)
 	{
