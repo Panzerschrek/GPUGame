@@ -23,32 +23,9 @@ endif()
 
 # Search dependencies.
 find_package(SDL2 REQUIRED)
-find_package(OpenGL REQUIRED)
-find_program(GLSLANGVALIDATOR glslangValidator)
-if(NOT GLSLANGVALIDATOR)
-	message(FATAL_ERROR "glslangValidator not found")
-endif()
-
-# Compile shaders.
-file(GLOB SHADERS "shaders/*")
-foreach(SHADER_FILE ${SHADERS})
-	file(RELATIVE_PATH OUT_FILE ${CMAKE_CURRENT_SOURCE_DIR} ${SHADER_FILE})
-	set(OUT_FILE_BASE ${CMAKE_CURRENT_BINARY_DIR}/${OUT_FILE})
-	string(REPLACE ".glsl" ".h" OUT_FILE_H ${OUT_FILE_BASE})
-	get_filename_component(VARIABLE_NAME ${SHADER_FILE} NAME)
-	string(REPLACE ".glsl" "" VARIABLE_NAME ${VARIABLE_NAME})
-	string(REPLACE "." "_" VARIABLE_NAME ${VARIABLE_NAME})
-	add_custom_command(
-		OUTPUT ${OUT_FILE_H}
-		DEPENDS ${SHADER_FILE}
-		COMMAND ${GLSLANGVALIDATOR} -V ${SHADER_FILE} --vn ${VARIABLE_NAME} -o ${OUT_FILE_H}
-		)
-
-	list(APPEND SHADERS_COMPILED ${OUT_FILE_H})
-endforeach()
 
 file(GLOB_RECURSE SOURCES "*.cpp" "*.hpp")
-add_executable(GPUGame ${SOURCES} ${SHADERS} ${SHADERS_COMPILED})
+add_executable(GPUGame ${SOURCES} ${SHADERS})
 target_link_libraries(GPUGame PRIVATE ${SDL2_LIBRARIES} OpenCL)
 target_include_directories(GPUGame PRIVATE ${SDL2_INCLUDE_DIRS})
 target_include_directories(GPUGame PRIVATE ${CMAKE_CURRENT_BINARY_DIR})
