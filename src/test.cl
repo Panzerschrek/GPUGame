@@ -12,10 +12,13 @@ uint32_t fib(uint32_t x )
 
 void SetBlack( uint32_t& x ){ x= 0u; }
 
+global uint32_t my_global_variable = 0x00000000u;
+
 kernel void entry(
-	global uint32_t* frame_buffer,
+	global uint32_t* const frame_buffer,
 	const uint32_t width,
 	const uint32_t height,
+	const uint32_t fill_color,
 	const float time_s )
 {
 	for( uint32_t y= 0 ; y < height; ++y )
@@ -40,8 +43,10 @@ kernel void entry(
 		frame_buffer[width * 53 + i]= x;
 	}
 
+	frame_buffer[width * height * 3 / 4 + width / 2 ]= my_global_variable;
+	my_global_variable= fill_color;
+
 	uint32_t b= 66;
 	SetBlack( b );
-	frame_buffer[width * height / 2 + height / 2]= b;
-
+	frame_buffer[width * height / 2 + width / 2]= b;
 }

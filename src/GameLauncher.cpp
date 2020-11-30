@@ -6,6 +6,26 @@
 namespace GPUGame
 {
 
+const char c_program_source[]= R"(
+global int my_global_variable = 0x00000000u;
+
+kernel void entry(
+	global int * frame_buffer,
+	int width,
+	int height,
+	int fill_color,
+	float time_s )
+{
+	for( int y= 0 ; y < height; ++y )
+	for( int x= 0 ; x < width ; ++x )
+		frame_buffer[ x + y * width ]= ( (y * 255u / height) << 8 ) | ( x * 255u / width );
+
+	frame_buffer[width * height * 3 / 4 + width / 2 ]= my_global_variable;
+	my_global_variable= fill_color;
+
+}
+)";
+
 GameLauncher::GameLauncher()
 	: window_width_ (320)
 	, window_height_(200)
@@ -42,6 +62,8 @@ GameLauncher::GameLauncher()
 
 	try
 	{
+#if 0
+
 		#include "test.sprv.h"
 		const void* const program_data= c_cl_program_spirv_file_content;
 		const size_t program_size= sizeof(c_cl_program_spirv_file_content);
@@ -71,6 +93,12 @@ GameLauncher::GameLauncher()
 			buff[s]= 0;
 			Log::Info( "Build status: ", buff );
 		}
+
+#else
+		cl_program_= cl::Program(cl_context_, std::string(c_program_source));
+		if( cl_program_.build(devices, "-cl-std=CL2.0") != 0 )
+			Log::Warning( "Program build failed: ", cl_program_.getBuildInfo<CL_PROGRAM_BUILD_LOG>(device) );
+#endif
 	}
 	catch(const std::exception& e)
 	{
@@ -88,9 +116,10 @@ void GameLauncher::RunFrame(const float time_s)
 {
 	cl::Kernel func(cl_program_, "entry");
 	func.setArg(0, cl_frame_buffer_);
-	func.setArg(1, window_width_ );
-	func.setArg(2, window_height_);
-	func.setArg(3, time_s);
+	func.setArg(1, window_width_  );
+	func.setArg(2, window_height_ );
+	func.setArg(3, 0xFF00FF00 );
+	func.setArg(4, time_s);
 
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 

@@ -30,7 +30,11 @@ private:
 
 	cl::Context cl_context_;
 	cl::CommandQueue cl_queue_;
+#if 0
 	MyProgram cl_program_;
+#else
+	cl::Program cl_program_;
+#endif
 	cl::Buffer cl_frame_buffer_;
 };
 
