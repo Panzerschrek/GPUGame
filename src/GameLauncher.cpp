@@ -101,11 +101,9 @@ void GameLauncher::RunFrame(const float time_s)
 
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 
-	std::vector<uint32_t> buffer(window_width_ * window_height_);
-	cl_queue_.enqueueReadBuffer(cl_frame_buffer_, CL_TRUE, 0, buffer.size() * sizeof(uint32_t), buffer.data());
-
-	glDrawPixels(window_width_, window_height_, GL_RGBA, GL_UNSIGNED_BYTE, buffer.data());
-	glFinish();
+	const auto buffer_mapped= cl_queue_.enqueueMapBuffer( cl_frame_buffer_, CL_TRUE, CL_MAP_READ, 0, window_width_ * window_height_ * 4 );
+	glDrawPixels(window_width_, window_height_, GL_RGBA, GL_UNSIGNED_BYTE, buffer_mapped );
+	cl_queue_.enqueueUnmapMemObject( cl_frame_buffer_, buffer_mapped );
 }
 
 } // namespace GPUGame
