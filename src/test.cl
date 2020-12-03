@@ -38,6 +38,11 @@ static const uint32_t g_palette[16]
 	0x00FFFFFFu,
 };
 
+const int32_t g_screen_size_x= 80;
+const int32_t g_screen_size_y= 64;
+const int32_t g_game_field_size_x= g_screen_size_x - 2;
+const int32_t g_game_field_size_y= g_screen_size_y - 2;
+
 
 #define UP 0
 #define DOWN 1
@@ -101,15 +106,15 @@ void Intro()
 void PrintField()
 {
 	int x, y;
-	for( x=0; x< 80; x++ )
+	for( x=0; x< g_screen_size_x; x++ )
 	{
 		ShowSymbol( x, 0, '#', COLOR_BLACK, COLOR_LGRAY );
-		ShowSymbol( x, 23, '#', COLOR_BLACK, COLOR_LGRAY );
+		ShowSymbol( x, g_screen_size_y - 1, '#', COLOR_BLACK, COLOR_LGRAY );
 	}
-	for( y=1; y< 24; y++ )
+	for( y=1; y< g_screen_size_y; y++ )
 	{
 		ShowSymbol( 0, y, '#', COLOR_BLACK, COLOR_LGRAY );
-		ShowSymbol( 79,y, '#', COLOR_BLACK, COLOR_LGRAY );
+		ShowSymbol( g_screen_size_x - 1,y, '#', COLOR_BLACK, COLOR_LGRAY );
 	}
 }
 
@@ -117,7 +122,7 @@ int snake_segments[64][3];//3-d coordinate - rotation
 int num_segments;
 int head_rotation= LEFT;
 
-int apple[2]= { 34, 12 };
+int apple[2]= { g_screen_size_x / 2 - 3, g_screen_size_y / 2 };
 int lifes=2, level= 1, score= 0;
 
 void ShowScoreAndLevel()
@@ -134,12 +139,12 @@ void ShowScoreAndLevel()
 
 void InitSnake()
 {
-	snake_segments[0][0]= 38;
-	snake_segments[0][1]= 12;
-	snake_segments[1][0]= 39;
-	snake_segments[1][1]= 12;
-	snake_segments[2][0]= 40;
-	snake_segments[2][1]= 12;
+	snake_segments[0][0]= g_screen_size_x / 2;
+	snake_segments[0][1]= g_screen_size_y / 2;
+	snake_segments[1][0]= g_screen_size_x / 2 + 1;
+	snake_segments[1][1]= g_screen_size_y / 2;
+	snake_segments[2][0]= g_screen_size_x / 2 + 2;
+	snake_segments[2][1]= g_screen_size_y / 2;
 	snake_segments[0][2]= snake_segments[1][2]= snake_segments[2][2]='<';
 
 	num_segments= 3;
@@ -159,8 +164,8 @@ void SpawnApple()
 
 	while( in_snake )
 	{
-		new_apple[0]= ( rand() % 78 ) + 1;
-		new_apple[1]= ( rand() % 22 ) + 1;
+		new_apple[0]= ( rand() % g_game_field_size_x ) + 1;
+		new_apple[1]= ( rand() % g_game_field_size_y ) + 1;
 		in_snake= 0;
 		for( i=0; i< num_segments; i++ )
 		{
@@ -260,7 +265,7 @@ void MoveSnake()
 
 	new_head[0]= move_vector[0] + snake_segments[0][0];
 	new_head[1]= move_vector[1] + snake_segments[0][1];
-	if( new_head[0] < 1 || new_head[0] > 78 || new_head[1] < 1 || new_head[1] > 22 )
+	if( new_head[0] < 1 || new_head[0] > g_game_field_size_x || new_head[1] < 1 || new_head[1] > g_game_field_size_y )
 	{
 		Death();
 		return;
