@@ -88,6 +88,9 @@ GameLauncher::GameLauncher()
 
 	// Initialize game.
 	cl::Kernel func(cl_program_, "start");
+	func.setArg(0, cl_frame_buffer_);
+	func.setArg(1, window_width_  );
+	func.setArg(2, window_height_ );
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 
 }
@@ -99,11 +102,7 @@ GameLauncher::~GameLauncher()
 void GameLauncher::RunFrame(const float time_s)
 {
 	cl::Kernel func(cl_program_, "frame_step");
-	func.setArg(0, cl_frame_buffer_);
-	func.setArg(1, window_width_  );
-	func.setArg(2, window_height_ );
-	func.setArg(3, 0xFF00FF00 );
-	func.setArg(4, time_s);
+	func.setArg(0, time_s);
 
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 

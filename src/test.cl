@@ -17,6 +17,27 @@
 #define COLOR_YELLOW  14
 #define COLOR_WHITE   15
 
+static const uint32_t g_palette[16]
+{
+	0x00000000u,
+	0x00800000u,
+	0x00008000u,
+	0x00808000u,
+	0x00000080u,
+	0x00800080u,
+	0x00008080u,
+	0x00808080u,
+
+	0x00404040u,
+	0x00FF0000u,
+	0x0000FF00u,
+	0x00FFFF00u,
+	0x000000FFu,
+	0x00FF00FFu,
+	0x0000FFFFu,
+	0x00FFFFFFu,
+};
+
 
 #define UP 0
 #define DOWN 1
@@ -29,6 +50,13 @@ int rand()
 	return 0;
 }
 
+struct
+{
+	uint32_t* pixels;
+	uint32_t width;
+	uint32_t height;
+} screen;
+
 void SetCursor( int x, int y )
 {
 }
@@ -39,15 +67,19 @@ void HexNop( int hex_nop_n )
 
 void ShowSymbol( unsigned char x, unsigned char y, char symbol, char b_color, char f_color )
 {
+	const uint32_t c_cell_size_x= 4;
+	const uint32_t c_cell_size_y= 4;
+	for( uint32_t xx= 0; xx < c_cell_size_x; ++xx )
+	for( uint32_t yy= 0; yy < c_cell_size_y; ++yy )
+		screen.pixels[ (xx + x * c_cell_size_x) + (yy + y * c_cell_size_y) * screen.width ]=
+			g_palette[ ( ((xx^yy)&1) == 0 || symbol == ' ' ) ? b_color : f_color ];
 }
 
 void ClearScreen(void)
 {
-}
-
-
-void SetVideoMode(void)
-{
+	for( uint32_t x= 0; x < screen.width ; ++x )
+	for( uint32_t y= 0; y < screen.height; ++y )
+		screen.pixels[ x + y * screen.width ]= 0;
 }
 
 void Intro()
@@ -291,8 +323,15 @@ void DrawSnake()
 	}
 }
 
-kernel void start()
+kernel void start(
+	global uint32_t* const frame_buffer,
+	const uint32_t width,
+	const uint32_t height)
 {
+	screen.pixels= frame_buffer;
+	screen.width= width;
+	screen.height= height;
+
 	Intro();
 	ClearScreen();
 	PrintField();
@@ -300,21 +339,8 @@ kernel void start()
 	InitSnake();
 }
 
-kernel void frame_step(
-	global uint32_t* const frame_buffer,
-	const uint32_t width,
-	const uint32_t height,
-	const uint32_t fill_color,
-	const float time_s )
+kernel void frame_step( const float time_s )
 {
-	for( uint32_t y= 0 ; y < height; ++y )
-	for( uint32_t x= 0 ; x < width ; ++x )
-		frame_buffer[ x + y * width ]= ( (y * 255u / height) << 8 ) | ( x * 255u / width );
-
-	unsigned  int i, j;
-	char c;
-
-
 	/*
 	c= GetKey();
 	while( c != 0 )
@@ -339,10 +365,16 @@ kernel void frame_step(
 			return;
 	}
 	*/
-	MoveSnake();
-	DrawSnake();
-	DrawApple();
-	j= 65535 - ( level  - 1 ) * 5461;
-	HexNop( j /2 );
 
+	static float prev_time_s= 0.0f;
+	const float step_duration_s= 1.0f;
+	if( time_s - prev_time_s >= step_duration_s )
+	{
+		printf( "run tick\n" );
+		MoveSnake();
+		DrawSnake();
+		DrawApple();
+
+		prev_time_s+= step_duration_s;
+	}
 }
