@@ -1,8 +1,5 @@
 #include <stdint.h>
 
-extern "C" int rand(); // TODO - implement
-extern "C" int strlen(const char*);
-
 #define COLOR_BLACK   0
 #define COLOR_BLUE    1
 #define COLOR_GREEN   2
@@ -25,6 +22,12 @@ extern "C" int strlen(const char*);
 #define DOWN 1
 #define LEFT 2
 #define RIGHT 3
+
+int rand()
+{
+	// TODO - implement.
+	return 0;
+}
 
 void SetCursor( int x, int y )
 {
@@ -54,12 +57,10 @@ void Intro()
 	char copyright[]=   "(c) 2013 Artjom Kunz";
 
 	ClearScreen();
-	j= strlen( game_name );
-	for( i=0; i< j; i++ )
-	ShowSymbol( 30+i,10, game_name[i], COLOR_BLACK, COLOR_LRED );
-	j= strlen( copyright );
-	for( i=0; i< j; i++ )
-	ShowSymbol( 30+i, 11, copyright[i], COLOR_BLACK, COLOR_DGRAY );
+	for( i=0; i< sizeof(game_name); i++ )
+		ShowSymbol( 30+i,10, game_name[i], COLOR_BLACK, COLOR_LRED );
+	for( i=0; i< sizeof(copyright); i++ )
+		ShowSymbol( 30+i, 11, copyright[i], COLOR_BLACK, COLOR_DGRAY );
 
 	for( i=0; i<4; i++ )
 		HexNop(65535);
