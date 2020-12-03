@@ -77,7 +77,7 @@ void ShowSymbol( unsigned char x, unsigned char y, char symbol, char b_color, ch
 	for( uint32_t xx= 0; xx < c_cell_size_x; ++xx )
 	for( uint32_t yy= 0; yy < c_cell_size_y; ++yy )
 		screen.pixels[ (xx + x * c_cell_size_x) + (yy + y * c_cell_size_y) * screen.width ]=
-			g_palette[ ( ((xx^yy)&1) == 0 || symbol == ' ' ) ? b_color : f_color ];
+			g_palette[ ((xx^yy)&1) == 0 ? b_color : f_color ];
 }
 
 void ClearScreen(void)
@@ -272,7 +272,7 @@ void MoveSnake()
 	}
 	else
 	{
-		ShowSymbol( snake_segments[ num_segments -1][0], snake_segments[ num_segments -1][1], ' ', COLOR_BLACK, COLOR_LGRAY );//clear tail
+		ShowSymbol( snake_segments[ num_segments -1][0], snake_segments[ num_segments -1][1], ' ', COLOR_BLACK, COLOR_BLACK );
 
 		//picked up apple
 		if( new_head[0] == apple[0] && new_head[1] == apple[1] )
