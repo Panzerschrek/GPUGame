@@ -1,9 +1,7 @@
 #include <stdint.h>
 
-
-#include "../include/stdio.h"
-#include "../include/stdlib.h"
-
+extern "C" int rand(); // TODO - implement
+extern "C" int strlen(const char*);
 
 #define COLOR_BLACK   0
 #define COLOR_BLUE    1
@@ -30,123 +28,37 @@
 
 void SetCursor( int x, int y )
 {
-	_asm
-	 {
-		mov ah, 2 ;cursor set
-		mov bh, 0
-		mov dh, y
-		mov dl, x
-		int 10h
-	 }
+
 }
 
 void HexNop( int hex_nop_n )
 {
-	_asm
-	{
-		mov cx, hex_nop_n
-		m1:
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		nop
-		loop m1
-	}
 }
 
 void ShowSymbol( unsigned char x, unsigned char y,
 char symbol, char b_color, char f_color )
 {
-	_asm
-	{
 
-		   ; pusha
-
-		mov ah, 2 ;cursor set
-		mov bh, 0
-		mov dh, y
-		mov dl, x
-		int 10h
-
-
-
-		mov ah, 9;symbol print
-		mov bh, 0
-
-		mov bl, f_color
-		push ax
-		mov al, 0
-		mov al, b_color
-		shl al, 1
-		shl al, 1
-		shl al, 1
-		shl al, 1
-		or bl, al
-		pop ax
-
-		mov al, symbol
-		mov cx, 1
-		int 10h
-
-		   ; popa
-
-	}
 }
 
 
 void ClearScreen(void)
 {
-	_asm
-	{
 
-		   ; pusha
-		mov cx, 25*80
-
-		clear:
-		push cx
-		mov ah, 14
-		mov bh, 0
-		mov al, ' '
-		mov bh, 01110000b
-		int 10h
-		pop cx
-		loop clear
-		   ; popa
-	}
 }
 
 
 void SetVideoMode(void)
 {
-	_asm
-	{
 
-		   ; pusha
-		mov ah, 0
-		mov al, 3
-		int 10h
-		   ; popa
-	}
 }
 
 
 void Intro()
 {
 	int i, j;
-	char* game_name=   "DOS-Snake by Panzerschrek";
-	char* copyright=   "(c) 2013 Artjom Kunz";
+	char game_name[]=   "DOS-Snake by Panzerschrek";
+	char copyright[]=   "(c) 2013 Artjom Kunz";
 
 	ClearScreen();
 	j= strlen( game_name );
@@ -378,19 +290,6 @@ void MoveSnake()
 char GetKey()
 {
 	char result;
-	_asm
-	{
-		mov ah, 6
-		mov dl, 0FFh
-		int 21h
-		jz no_result
-		mov result, al
-		jmp end_func
-
-		no_result:
-		mov result, 0
-		end_func:
-	}
 	return result;
 }
 
@@ -415,7 +314,8 @@ void MainLoop()
 	   while(1)
 	   {
 
-	  while( c= GetKey() )
+		c= GetKey();
+	  while( c != 0 )
 	  {
 	   if( c =='w' )
 	   {
@@ -444,7 +344,7 @@ void MainLoop()
 	   }
 }
 
-int main()
+int old_main()
 {
 
 	unsigned int i;
