@@ -28,31 +28,24 @@ extern "C" int strlen(const char*);
 
 void SetCursor( int x, int y )
 {
-
 }
 
 void HexNop( int hex_nop_n )
 {
 }
 
-void ShowSymbol( unsigned char x, unsigned char y,
-char symbol, char b_color, char f_color )
+void ShowSymbol( unsigned char x, unsigned char y, char symbol, char b_color, char f_color )
 {
-
 }
-
 
 void ClearScreen(void)
 {
-
 }
 
 
 void SetVideoMode(void)
 {
-
 }
-
 
 void Intro()
 {
@@ -67,7 +60,6 @@ void Intro()
 	j= strlen( copyright );
 	for( i=0; i< j; i++ )
 	ShowSymbol( 30+i, 11, copyright[i], COLOR_BLACK, COLOR_DGRAY );
-
 
 	for( i=0; i<4; i++ )
 		HexNop(65535);
@@ -88,7 +80,6 @@ void PrintField()
 	}
 }
 
-
 int snake_segments[64][3];//3-d coordinate - rotation
 int num_segments;
 int head_rotation= LEFT;
@@ -96,10 +87,9 @@ int head_rotation= LEFT;
 int apple[2]= { 34, 12 };
 int lifes=2, level= 1, score= 0;
 
-
 void ShowScoreAndLevel()
 {
-	   SetCursor( 1, 24 );
+	SetCursor( 1, 24 );
 	printf( "Score: %d", score );
 	printf( "  Level: %d", level );
 	printf( "  Lifes: %d", lifes );
@@ -123,7 +113,6 @@ void InitSnake()
 	head_rotation= LEFT;
 }
 
-
 void DrawApple()
 {
 	ShowSymbol( apple[0], apple[1], '*', COLOR_BLACK, COLOR_LRED );
@@ -131,7 +120,6 @@ void DrawApple()
 
 void SpawnApple()
 {
-
 	int new_apple[2];
 	int i;
 	int in_snake= 1;
@@ -246,11 +234,9 @@ void MoveSnake()
 	}
 	else
 	{
-		ShowSymbol( snake_segments[ num_segments -1][0],
-				snake_segments[ num_segments -1][1],
-				' ', COLOR_BLACK, COLOR_LGRAY );//clear tail
+		ShowSymbol( snake_segments[ num_segments -1][0], snake_segments[ num_segments -1][1], ' ', COLOR_BLACK, COLOR_LGRAY );//clear tail
 
-		  //picked up apple
+		//picked up apple
 		if( new_head[0] == apple[0] && new_head[1] == apple[1] )
 		{
 			snake_segments[ num_segments ][0]= snake_segments[ num_segments - 1 ][0];
@@ -304,49 +290,47 @@ void DrawSnake()
 	}
 }
 
-
 void MainLoop()
 {
-	   unsigned  int i, j;
-	   char c;
+	unsigned  int i, j;
+	char c;
 
-
-	   while(1)
-	   {
+	while(1)
+	{
 
 		c= GetKey();
-	  while( c != 0 )
-	  {
-	   if( c =='w' )
-	   {
-		 if( head_rotation != DOWN ) head_rotation= UP;
-	   }
-	   else if( c == 's' )
-	   {
-		if( head_rotation != UP ) head_rotation= DOWN;
-	   }
-	   else if ( c == 'a' )
-	   {
-		 if(head_rotation !=RIGHT)   head_rotation= LEFT;
-	   }
-	else if( c == 'd' )
-	   {
-		 if( head_rotation != LEFT )   head_rotation= RIGHT;
-	   }
-	else if ( c == 'q' || c == 'Q' )
-		return;
-	   }
-	MoveSnake();
-	DrawSnake();
-	DrawApple();
-	j= 65535 -( level  - 1 ) * 5461;
-	HexNop( j /2 );
-	   }
+		while( c != 0 )
+		{
+			if( c == 'w' )
+			{
+				if( head_rotation != DOWN ) head_rotation= UP;
+			}
+			else if( c == 's' )
+			{
+				if( head_rotation != UP ) head_rotation= DOWN;
+			}
+			else if ( c == 'a' )
+			{
+				if(head_rotation !=RIGHT)   head_rotation= LEFT;
+			}
+			else if( c == 'd' )
+			{
+				if( head_rotation != LEFT )   head_rotation= RIGHT;
+			}
+			else if ( c == 'q' || c == 'Q' )
+				return;
+		}
+		MoveSnake();
+		DrawSnake();
+		DrawApple();
+		j= 65535 -( level  - 1 ) * 5461;
+		HexNop( j /2 );
+
+	}
 }
 
 int old_main()
 {
-
 	unsigned int i;
 	SetVideoMode();
 	Intro();
@@ -355,13 +339,11 @@ int old_main()
 	ShowScoreAndLevel();
 	InitSnake();
 
-	   MainLoop();
-	   ClearScreen();
-	   SetVideoMode();
-	   return 0;
+	MainLoop();
+	ClearScreen();
+	SetVideoMode();
+	return 0;
 }
-
-
 
 uint32_t fib(uint32_t x )
 {
