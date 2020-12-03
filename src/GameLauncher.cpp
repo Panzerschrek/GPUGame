@@ -84,6 +84,12 @@ GameLauncher::GameLauncher()
 	}
 
 	cl_frame_buffer_= cl::Buffer(cl_context_, CL_MEM_READ_WRITE, window_width_ * window_height_ * 4);
+
+
+	// Initialize game.
+	cl::Kernel func(cl_program_, "start");
+	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
+
 }
 
 GameLauncher::~GameLauncher()
@@ -92,7 +98,7 @@ GameLauncher::~GameLauncher()
 
 void GameLauncher::RunFrame(const float time_s)
 {
-	cl::Kernel func(cl_program_, "entry");
+	cl::Kernel func(cl_program_, "frame_step");
 	func.setArg(0, cl_frame_buffer_);
 	func.setArg(1, window_width_  );
 	func.setArg(2, window_height_ );

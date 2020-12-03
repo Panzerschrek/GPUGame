@@ -291,76 +291,16 @@ void DrawSnake()
 	}
 }
 
-void MainLoop()
+kernel void start()
 {
-	unsigned  int i, j;
-	char c;
-
-	while(1)
-	{
-
-		c= GetKey();
-		while( c != 0 )
-		{
-			if( c == 'w' )
-			{
-				if( head_rotation != DOWN ) head_rotation= UP;
-			}
-			else if( c == 's' )
-			{
-				if( head_rotation != UP ) head_rotation= DOWN;
-			}
-			else if ( c == 'a' )
-			{
-				if(head_rotation !=RIGHT)   head_rotation= LEFT;
-			}
-			else if( c == 'd' )
-			{
-				if( head_rotation != LEFT )   head_rotation= RIGHT;
-			}
-			else if ( c == 'q' || c == 'Q' )
-				return;
-		}
-		MoveSnake();
-		DrawSnake();
-		DrawApple();
-		j= 65535 -( level  - 1 ) * 5461;
-		HexNop( j /2 );
-
-	}
-}
-
-int old_main()
-{
-	unsigned int i;
-	SetVideoMode();
 	Intro();
 	ClearScreen();
 	PrintField();
 	ShowScoreAndLevel();
 	InitSnake();
-
-	MainLoop();
-	ClearScreen();
-	SetVideoMode();
-	return 0;
 }
 
-uint32_t fib(uint32_t x )
-{
-/*
-	if( x <= 1u )
-		return 1u;
-	return fib( x - 1u ) + fib( x - 2u );
-*/
-	return 5u;
-}
-
-void SetBlack( uint32_t& x ){ x= 0u; }
-
-global uint32_t g_dst_pixel= 0;
-
-kernel void entry(
+kernel void frame_step(
 	global uint32_t* const frame_buffer,
 	const uint32_t width,
 	const uint32_t height,
@@ -371,36 +311,38 @@ kernel void entry(
 	for( uint32_t x= 0 ; x < width ; ++x )
 		frame_buffer[ x + y * width ]= ( (y * 255u / height) << 8 ) | ( x * 255u / width );
 
-	for( uint32_t x= 0 ; x < width ; ++x )
+	unsigned  int i, j;
+	char c;
+
+
+	/*
+	c= GetKey();
+	while( c != 0 )
 	{
-		const auto s= sin(float(x) / 16.0f + time_s);
-		const auto r= uint32_t( (s * 0.5f + 0.5f) * 255.0f );
-		for( uint32_t y= height * 3 / 8 ; y < height * 5 / 8; ++y )
+		if( c == 'w' )
 		{
-			frame_buffer[ x + y * width ] |= r << 16;
+			if( head_rotation != DOWN ) head_rotation= UP;
 		}
+		else if( c == 's' )
+		{
+			if( head_rotation != UP ) head_rotation= DOWN;
+		}
+		else if ( c == 'a' )
+		{
+			if(head_rotation !=RIGHT)   head_rotation= LEFT;
+		}
+		else if( c == 'd' )
+		{
+			if( head_rotation != LEFT )   head_rotation= RIGHT;
+		}
+		else if ( c == 'q' || c == 'Q' )
+			return;
 	}
-	for( uint32_t i= 0; i < 60; ++i )
-	{
-		uint32_t x= fib(i / 4);
-		frame_buffer[width * 50 + i]= x;
-		frame_buffer[width * 51 + i]= x;
-		frame_buffer[width * 52 + i]= x;
-		frame_buffer[width * 53 + i]= x;
-	}
+	*/
+	MoveSnake();
+	DrawSnake();
+	DrawApple();
+	j= 65535 - ( level  - 1 ) * 5461;
+	HexNop( j /2 );
 
-	constexpr uint32_t c_local_array_size= 16384;
-	uint32_t my_local_array[c_local_array_size];
-	for( uint32_t i= 0; i < c_local_array_size; ++i )
-		my_local_array[i]= i * i + g_dst_pixel;
-
-	for( uint32_t i= 0; i < c_local_array_size; ++i )
-		frame_buffer[ width * height / 2 + i ]= my_local_array[c_local_array_size - 1 - i];
-
-	frame_buffer[ g_dst_pixel ]= fill_color;
-	++g_dst_pixel;
-
-	uint32_t b= 66;
-	SetBlack( b );
-	frame_buffer[width * height / 2 + width / 2]= b;
 }
