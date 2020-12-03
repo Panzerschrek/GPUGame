@@ -198,6 +198,7 @@ InputState SystemWindow::GetInputState()
 {
 	InputState result;
 	result.keyboard.reset();
+	result.raw_keys.reset();
 	result.mouse.reset();
 
 	int key_count= 0;
@@ -205,6 +206,10 @@ InputState SystemWindow::GetInputState()
 
 	for(int i= 0; i < key_count; ++i)
 	{
+		const SDL_Keycode raw_code= SDL_GetKeyFromScancode(SDL_Scancode(i));
+		if( raw_code < 128 )
+			result.raw_keys[raw_code]= keyboard_state[i] != 0;
+
 		const SystemEventTypes::KeyCode code= TranslateKey(SDL_Scancode(i));
 		if(code < SystemEventTypes::KeyCode::KeyCount && code != SystemEventTypes::KeyCode::Unknown)
 			result.keyboard[size_t(code)]= keyboard_state[i] != 0;

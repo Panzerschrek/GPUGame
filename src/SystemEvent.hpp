@@ -110,6 +110,7 @@ using MouseState= std::bitset< size_t(ButtonCode::ButtonCount) >;
 struct InputState
 {
 	KeyboardState keyboard;
+	std::bitset< 128 > raw_keys;
 	MouseState mouse;
 };
 

@@ -1,4 +1,5 @@
 #pragma once
+#include "SystemEvent.hpp"
 
 //#define CL_HPP_ENABLE_EXCEPTIONS
 #define CL_HPP_MINIMUM_OPENCL_VERSION 200
@@ -15,7 +16,7 @@ public:
 	GameLauncher();
 	~GameLauncher();
 
-	void RunFrame(float time_s);
+	void RunFrame(const InputState& input_state, float time_s);
 
 private:
 	class MyProgram : public cl::Program

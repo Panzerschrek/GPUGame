@@ -6,6 +6,17 @@
 namespace GPUGame
 {
 
+namespace
+{
+
+// Must match same struct in OpenCL code!
+struct KeysState
+{
+	uint8_t bits[128 / 8];
+};
+
+} // namespace
+
 GameLauncher::GameLauncher()
 	: window_width_ (320)
 	, window_height_(200)
@@ -99,10 +110,15 @@ GameLauncher::~GameLauncher()
 {
 }
 
-void GameLauncher::RunFrame(const float time_s)
+void GameLauncher::RunFrame(const InputState& input_state, const float time_s)
 {
+	KeysState keys_state{};
+	for( uint32_t i= 0; i < 128u; ++i )
+		keys_state.bits[ i >> 3 ] |= ( input_state.raw_keys[i] ? 1 : 0 ) << (i & 7);
+
 	cl::Kernel func(cl_program_, "frame_step");
-	func.setArg(0, time_s);
+	func.setArg(0, keys_state);
+	func.setArg(1, time_s);
 
 	cl_queue_.enqueueNDRangeKernel(func, cl::NullRange, 1, cl::NullRange);
 

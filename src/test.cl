@@ -344,38 +344,41 @@ kernel void start(
 	InitSnake();
 }
 
-kernel void frame_step( const float time_s )
+struct KeysState
 {
-	/*
-	c= GetKey();
-	while( c != 0 )
+	uint8_t bits[128 / 8];
+};
+
+bool GetKey(const KeysState& state, const char key)
+{
+	return ( state.bits[ key >> 3 ] & (1 << (key&7)) ) != 0;
+}
+
+kernel void frame_step( const KeysState keys_state, const float time_s )
+{
+	if( GetKey( keys_state, 's' ) )
 	{
-		if( c == 'w' )
-		{
-			if( head_rotation != DOWN ) head_rotation= UP;
-		}
-		else if( c == 's' )
-		{
-			if( head_rotation != UP ) head_rotation= DOWN;
-		}
-		else if ( c == 'a' )
-		{
-			if(head_rotation !=RIGHT)   head_rotation= LEFT;
-		}
-		else if( c == 'd' )
-		{
-			if( head_rotation != LEFT )   head_rotation= RIGHT;
-		}
-		else if ( c == 'q' || c == 'Q' )
-			return;
+		if( head_rotation != DOWN ) head_rotation= UP;
 	}
-	*/
+	if( GetKey( keys_state, 'w' ) )
+	{
+		if( head_rotation != UP ) head_rotation= DOWN;
+	}
+	if( GetKey( keys_state, 'a' ) )
+	{
+		if(head_rotation !=RIGHT)   head_rotation= LEFT;
+	}
+	if( GetKey( keys_state, 'd' ) )
+	{
+		if( head_rotation != LEFT )   head_rotation= RIGHT;
+	}
+	//else if ( c == 'q' || c == 'Q' )
+	//	return;
 
 	static float prev_time_s= 0.0f;
-	const float step_duration_s= 1.0f;
+	const float step_duration_s= 0.25f;
 	if( time_s - prev_time_s >= step_duration_s )
 	{
-		printf( "run tick\n" );
 		MoveSnake();
 		DrawSnake();
 		DrawApple();

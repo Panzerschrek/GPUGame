@@ -37,9 +37,8 @@ bool Host::Loop()
 	if( ticks_counter_.GetTotalTicks() % 60 == 0 )
 		Log::Info( "FPS: ", ticks_counter_.GetTicksFrequency());
 
-
 	window_opengl_.BeginFrame();
-	game_launcher_.RunFrame(time_s);
+	game_launcher_.RunFrame(system_window_.GetInputState(), time_s);
 	window_opengl_.EndFrame();
 
 	const Clock::time_point tick_end_time= Clock::now();
